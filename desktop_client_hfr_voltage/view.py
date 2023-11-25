@@ -1,6 +1,6 @@
 from PyQt6 import QtCore, QtWidgets, QtGui
 from pyqtgraph import PlotWidget, mkPen, PlotItem
-from settings import Settings
+from .settings import Settings
 
 FONT_PRIMARY = QtGui.QFont('Arial', 15, 700)
 FONT_SECONDARY = QtGui.QFont('Arial', 12, 400)

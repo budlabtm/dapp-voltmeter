@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QApplication
-from controller import Controller
-from view import MainWindow
-from settings import Settings
+from .controller import Controller
+from .view import MainWindow
+from .settings import Settings
 import sys
 
 Settings.init()

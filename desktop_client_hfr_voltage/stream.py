@@ -1,5 +1,5 @@
 from PyQt6 import QtCore
-from settings import Settings
+from .settings import Settings
 import paho.mqtt.client as mqtt
 
 

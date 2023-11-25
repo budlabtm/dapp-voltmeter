@@ -1,6 +1,6 @@
 from PyQt6 import QtCore
 from scipy import fft
-from settings import Settings
+from .settings import Settings
 from collections import deque
 import numpy
 import time

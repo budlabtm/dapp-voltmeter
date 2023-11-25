@@ -2,6 +2,9 @@ from PyQt6 import QtCore
 
 
 class Settings:
+    def __init__(self):
+        pass
+
     settings = QtCore.QSettings("desktop/client", "hfr/voltage")
 
     @staticmethod

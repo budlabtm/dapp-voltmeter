@@ -1,7 +1,7 @@
 from PyQt6 import QtCore, QtWidgets
-from stream import Stream
-from processor import ProcessorManager
-from view import StreamWidget
+from .stream import Stream
+from .processor import ProcessorManager
+from .view import StreamWidget
 
 
 class Controller(QtCore.QObject):
