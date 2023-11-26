@@ -42,3 +42,24 @@ After that, application ready to run:
 ``` shell
 python -m desktop_client_hfr_voltage
 ```
+
+## Configuration
+
+After first startup, there is configuration file created at `~/.config/desktop/client/hfr/voltage.conf`
+
+The configuration file has the following sections:
+- [General] - configurations, that will be applied to entire application.
+- [C0] - first channel configuration.
+- [C1] - second channel configuration.
+- [MQTT] - MQTT client configuration.
+
+### Restrictions
+- All ranges (`**_range` fields) must match the following pattern:
+`{start}:{stop}[:{step}]`, where [...] - optional.
+
+- Ranges set in local channel settings must be localted within corresponding global ranges (e.g. `C0/direct_processing_size` must be within `General/processing_size_range`).
+
+- Boolean values (e.g `fft_x_converted`) must be `true` of `false`.
+
+### Reset
+In order to reset configurations, set `reset` field to value `1`.
