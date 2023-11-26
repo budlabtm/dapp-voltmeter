@@ -11,6 +11,5 @@ setup(
         'numpy',
         'scipy',
         'paho-mqtt',
-
     ]
 )
