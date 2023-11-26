@@ -22,7 +22,7 @@ class RingBuffer:
             self._size += 1
         else:
             self._sum -= self._data[self._last]
-            self._data.insert(self._last, value)
+            self._data[self._last] = value
             self._last = self._last + 1 if self._last < self._maxsize - 1 else 0
 
     def data(self):
@@ -77,24 +77,32 @@ class Processor(QtCore.QObject):
 
     def __init__(self, channel: str) -> None:
         super().__init__()
-        self.storage = StreamBuffer(Settings.get_range('processing_size_range').stop)
+        self.storage = StreamBuffer(
+            Settings.get_range('processing_size_range').stop)
 
-        self.processing_rate = int(Settings.get_for_channel(channel, 'processing_rate'))
-        self.direct_processing_size = int(Settings.get_for_channel(channel, 'direct_processing_size'))
-        self.fft_processing_size = int(Settings.get_for_channel(channel, 'fft_processing_size'))
+        self.processing_rate = int(
+            Settings.get_for_channel(channel, 'processing_rate'))
+        self.direct_processing_size = int(
+            Settings.get_for_channel(channel, 'direct_processing_size'))
+        self.fft_processing_size = int(
+            Settings.get_for_channel(channel, 'fft_processing_size'))
         self.channel = channel
         self.current_tab = 0
-        self.fft_x_converted = Settings.get_for_channel(channel, 'fft_x_converted') == 'true'
-        self.direct_x_converted = Settings.get_for_channel(channel, 'direct_x_converted') == 'true'
+        self.fft_x_converted = Settings.get_for_channel(
+            channel, 'fft_x_converted') == 'true'
+        self.direct_x_converted = Settings.get_for_channel(
+            channel, 'direct_x_converted') == 'true'
 
         self.instant_timer = QtCore.QTimer()
         self.processing_timer = QtCore.QTimer()
 
         self.instant_timer.timeout.connect(self.update_instant)
         self.processing_timer.timeout.connect(self.process)
-        self.updateProcessingInterval.connect(self.processing_timer.setInterval)
+        self.updateProcessingInterval.connect(
+            self.processing_timer.setInterval)
 
-        self.instant_timer.start(int(1000 / int(Settings.get_for_channel(channel, 'instant_rate'))))
+        self.instant_timer.start(
+            int(1000 / int(Settings.get_for_channel(channel, 'instant_rate'))))
         self.processing_timer.start(int(1000 / self.processing_rate))
 
     def on_value(self, value):
@@ -112,8 +120,10 @@ class Processor(QtCore.QObject):
 
             self.updateMean.emit(y.mean())
             self.updateDeviation.emit(y.std())
-            self.updateDirectLabel.emit('Timeline, seconds ago' if self.direct_x_converted else 'Timeline, ticks ago')
-            self.updateDirectChartData.emit(x1 if self.direct_x_converted else x2, y)
+            self.updateDirectLabel.emit(
+                'Timeline, seconds ago' if self.direct_x_converted else 'Timeline, ticks ago')
+            self.updateDirectChartData.emit(
+                x1 if self.direct_x_converted else x2, y)
 
         elif self.current_tab == 1:  # FFT
             r = self.fft_processing_size - 1
@@ -124,7 +134,8 @@ class Processor(QtCore.QObject):
             y = numpy.abs(fft.fft(array - array.mean()))
             y = numpy.concatenate((y[(r // 2):], y[1:(r // 2 + 1)]))
 
-            self.updateFFTLabel.emit('Frequency, Hz' if self.fft_x_converted else 'Frequency')
+            self.updateFFTLabel.emit(
+                'Frequency, Hz' if self.fft_x_converted else 'Frequency')
             self.updateFFTChartData.emit(x2 if self.fft_x_converted else x1, y)
 
     def set_processing_rate(self, rate: int):
@@ -150,11 +161,16 @@ class Processor(QtCore.QObject):
         self.instant_timer.stop()
         self.processing_timer.stop()
 
-        Settings.set_for_channel(self.channel, 'processing_rate', self.processing_rate)
-        Settings.set_for_channel(self.channel, 'direct_processing_size', self.direct_processing_size)
-        Settings.set_for_channel(self.channel, 'fft_processing_size', self.fft_processing_size)
-        Settings.set_for_channel(self.channel, 'direct_x_converted', self.direct_x_converted)
-        Settings.set_for_channel(self.channel, 'fft_x_converted', self.fft_x_converted)
+        Settings.set_for_channel(
+            self.channel, 'processing_rate', self.processing_rate)
+        Settings.set_for_channel(
+            self.channel, 'direct_processing_size', self.direct_processing_size)
+        Settings.set_for_channel(
+            self.channel, 'fft_processing_size', self.fft_processing_size)
+        Settings.set_for_channel(
+            self.channel, 'direct_x_converted', self.direct_x_converted)
+        Settings.set_for_channel(
+            self.channel, 'fft_x_converted', self.fft_x_converted)
 
 
 class ProcessorManager:
