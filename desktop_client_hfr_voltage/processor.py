@@ -2,6 +2,7 @@ from PyQt6 import QtCore
 from scipy import fft
 from .settings import Settings
 from collections import deque
+from .stream import Source
 import numpy
 import time
 
@@ -157,6 +158,9 @@ class Processor(QtCore.QObject):
     def set_fft_processing_size(self, size: int):
         self.fft_processing_size = size
 
+    def attach_source(self, source: Source):
+        source.tick.connect(self.on_value)
+
     def terminate(self):
         self.instant_timer.stop()
         self.processing_timer.stop()
@@ -189,7 +193,7 @@ class ProcessorManager:
         thread.start()
         return processor
 
-    def terminate_all(self):
+    def terminate(self):
         for processor in self.processors:
             processor.terminate()
 

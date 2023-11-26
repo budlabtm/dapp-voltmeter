@@ -1,5 +1,5 @@
 from PyQt6 import QtCore, QtWidgets, QtGui
-from pyqtgraph import PlotWidget, mkPen, PlotItem
+from pyqtgraph import PlotWidget, mkPen
 from .settings import Settings
 
 FONT_PRIMARY = QtGui.QFont('Arial', 15, 700)
@@ -62,7 +62,8 @@ class Chart(PlotWidget):
                  ) -> None:
         super().__init__(parent)
         self.curve = self.getPlotItem().plot([0], [0])
-        self.draw(x_invert, y_log_mode_default, x_view_range_default, y_view_range_default)
+        self.draw(x_invert, y_log_mode_default,
+                  x_view_range_default, y_view_range_default)
 
     def draw(self, x_invert, y_log_mode_default, x_view_range_default, y_view_range_default):
         self.setBackground((251, 251, 251))
@@ -74,8 +75,10 @@ class Chart(PlotWidget):
         self.getPlotItem().showAxis('right', True)
         self.getPlotItem().getAxis('top').setStyle(tickLength=0, showValues=False)
         self.getPlotItem().getAxis('right').setStyle(tickLength=0, showValues=False)
-        self.getPlotItem().setXRange(x_view_range_default[0], x_view_range_default[1], 0)
-        self.getPlotItem().setYRange(y_view_range_default[0], y_view_range_default[1], 0)
+        self.getPlotItem().setXRange(
+            x_view_range_default[0], x_view_range_default[1], 0)
+        self.getPlotItem().setYRange(
+            y_view_range_default[0], y_view_range_default[1], 0)
 
     def get_view_range(self):
         return self.getPlotItem().viewRange()
@@ -123,16 +126,19 @@ class DirectTab(Tab):
                  parent: QtWidgets.QWidget
                  ) -> None:
         super().__init__(processing_range_default, parent)
-        self.chart = Chart(True, False, x_view_range_default, y_view_range_default, self)
+        self.chart = Chart(True, False, x_view_range_default,
+                           y_view_range_default, self)
         self.mean_label = FormatLabel("Mean: %.2fkV", FONT_SECONDARY, self)
-        self.deviation_label = FormatLabel("Std. dev: %.2fkV", FONT_SECONDARY, self)
+        self.deviation_label = FormatLabel(
+            "Std. dev: %.2fkV", FONT_SECONDARY, self)
         self.draw()
 
         self.processing_size_selector.valueChanged.connect(
             lambda: self.processingSizeChanged.emit(self.get_processing_size())
         )
         self.convert_x_checkbox.stateChanged.connect(
-            lambda: self.xConvertedStateChanged.emit(self.convert_x_checkbox.isChecked())
+            lambda: self.xConvertedStateChanged.emit(
+                self.convert_x_checkbox.isChecked())
         )
 
     def draw(self):
@@ -185,7 +191,8 @@ class FftTab(Tab):
                  parent: QtWidgets.QWidget
                  ) -> None:
         super().__init__(processing_range_default, parent)
-        self.chart = Chart(False, y_log_mode_default, x_view_range_default, y_view_range_default, self)
+        self.chart = Chart(False, y_log_mode_default,
+                           x_view_range_default, y_view_range_default, self)
         self.y_log_mode_checkbox = QtWidgets.QCheckBox("Log Y", self)
         self.draw(y_log_mode_default)
 
@@ -194,7 +201,8 @@ class FftTab(Tab):
         self.y_log_mode_checkbox.stateChanged.connect(
             lambda: self.chart.set_y_log_mode(self.y_log_mode_checkbox.isChecked()))
         self.convert_x_checkbox.stateChanged.connect(
-            lambda: self.xConvertedStateChanged.emit(self.convert_x_checkbox.isChecked())
+            lambda: self.xConvertedStateChanged.emit(
+                self.convert_x_checkbox.isChecked())
         )
 
     def draw(self, y_log_mode_default):
@@ -237,7 +245,8 @@ class StreamWidget(QtWidgets.QWidget):
     def __init__(self, channel: str, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self.channel = channel
-        self.channel_label = FormatLabel(Settings.get_for_channel(channel, 'title'), FONT_PRIMARY, self)
+        self.channel_label = FormatLabel(
+            Settings.get_for_channel(channel, 'title'), FONT_PRIMARY, self)
         self.processing_rate_selector = Selector(
             "Processing rate",
             Settings.get_range('processing_rate_range'),
@@ -260,14 +269,18 @@ class StreamWidget(QtWidgets.QWidget):
             Settings.get_view_range(channel + '/fft_y_view_range'),
             self
         )
-        self.direct_tab.convert_x_checkbox.setChecked(Settings.get_for_channel(channel, 'direct_x_converted') == 'true')
-        self.fft_tab.convert_x_checkbox.setChecked(Settings.get_for_channel(channel, 'fft_x_converted') == 'true')
+        self.direct_tab.convert_x_checkbox.setChecked(
+            Settings.get_for_channel(channel, 'direct_x_converted') == 'true')
+        self.fft_tab.convert_x_checkbox.setChecked(
+            Settings.get_for_channel(channel, 'fft_x_converted') == 'true')
         self.draw()
 
         self.processing_rate_selector.valueChanged.connect(
-            lambda: self.processingRateChanged.emit(self.processing_rate_selector.get_value())
+            lambda: self.processingRateChanged.emit(
+                self.processing_rate_selector.get_value())
         )
-        self.tab.currentChanged.connect(lambda: self.currentTabChanged.emit(self.tab.currentIndex()))
+        self.tab.currentChanged.connect(
+            lambda: self.currentTabChanged.emit(self.tab.currentIndex()))
         self.fftProcessingSizeChanged = self.fft_tab.processingSizeChanged
         self.fftXConvertedStateChanged = self.fft_tab.xConvertedStateChanged
         self.directProcessingSizeChanged = self.direct_tab.processingSizeChanged
@@ -319,26 +332,46 @@ class StreamWidget(QtWidgets.QWidget):
         dvr = self.direct_tab.get_chart_view_range()
         fvr = self.fft_tab.get_chart_view_range()
 
-        Settings.set_for_channel(self.channel, 'direct_x_view_range', '{}:{}'.format(dvr[0][0], dvr[0][1]))
-        Settings.set_for_channel(self.channel, 'direct_y_view_range', '{}:{}'.format(dvr[1][0], dvr[1][1]))
-        Settings.set_for_channel(self.channel, 'fft_x_view_range', '{}:{}'.format(fvr[0][0], fvr[0][1]))
-        Settings.set_for_channel(self.channel, 'fft_y_view_range', '{}:{}'.format(fvr[1][0], fvr[1][1]))
+        Settings.set_for_channel(
+            self.channel, 'direct_x_view_range', '{}:{}'.format(dvr[0][0], dvr[0][1]))
+        Settings.set_for_channel(
+            self.channel, 'direct_y_view_range', '{}:{}'.format(dvr[1][0], dvr[1][1]))
+        Settings.set_for_channel(
+            self.channel, 'fft_x_view_range', '{}:{}'.format(fvr[0][0], fvr[0][1]))
+        Settings.set_for_channel(
+            self.channel, 'fft_y_view_range', '{}:{}'.format(fvr[1][0], fvr[1][1]))
 
-        Settings.set_for_channel(self.channel, 'fft_y_log_mode', self.fft_tab.get_y_log_mode())
+        Settings.set_for_channel(
+            self.channel, 'fft_y_log_mode', self.fft_tab.get_y_log_mode())
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self) -> None:
         super().__init__()
+        self.stream_widgets: list[StreamWidget] = []
+
         self.widget = QtWidgets.QWidget()
         self.layout = QtWidgets.QVBoxLayout()
-        self.setGeometry(0, 0, int(Settings.get('window_width')), int(Settings.get('window_height')))
+        self.connectionLabel = QtWidgets.QLabel()
+
+        self.layout.addWidget(self.connectionLabel)
+
+        self.setGeometry(0, 0, int(Settings.get('window_width')),
+                         int(Settings.get('window_height')))
         self.setWindowTitle(Settings.get('window_title'))
+
+    def add_stream_widget(self, widget: StreamWidget):
+        self.stream_widgets.append(widget)
+        self.layout.addWidget(widget)
+
+    def set_connection_status(self, status: str):
+        self.connectionLabel.setText('Connection status: ' + status)
 
     def show(self):
         self.widget.setLayout(self.layout)
         self.setCentralWidget(self.widget)
         super().show()
 
-    def add_stream_widget(self, widget: StreamWidget):
-        self.layout.addWidget(widget)
+    def terminate(self):
+        for widget in self.stream_widgets:
+            widget.terminate()
