@@ -110,7 +110,7 @@ class Processor(QtCore.QObject):
         self.storage.append(value)
 
     def update_instant(self):
-        self.updateInstant.emit(self.storage.data()[-1])
+        self.updateInstant.emit(self.storage.data()[0])
 
     def process(self):
         if self.current_tab == 0:  # U
