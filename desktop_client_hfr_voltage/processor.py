@@ -132,7 +132,7 @@ class Processor(QtCore.QObject):
             x2 = x1 * self.storage.sampling_rate()
 
             array = numpy.array(self.storage.data())[:r]
-            y = numpy.abs(fft.fft(array - array.mean()))
+            y = numpy.abs(fft.fft(array - array.mean(), norm='forward'))
             y = numpy.concatenate((y[(r // 2):], y[1:(r // 2 + 1)]))
 
             self.updateFFTLabel.emit(
