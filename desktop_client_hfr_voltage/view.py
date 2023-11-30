@@ -1,5 +1,5 @@
 from PyQt6 import QtCore, QtWidgets, QtGui
-from pyqtgraph import PlotWidget, mkPen
+from pyqtgraph import PlotWidget, mkPen, InfiniteLine
 from .settings import Settings
 
 FONT_PRIMARY = QtGui.QFont('Arial', 15, 700)
@@ -58,14 +58,24 @@ class Chart(PlotWidget):
                  y_log_mode_default: bool,
                  x_view_range_default: range,
                  y_view_range_default: range,
+                 enable_markers: bool,
                  parent: QtWidgets.QWidget
                  ) -> None:
         super().__init__(parent)
         self.curve = self.getPlotItem().plot([0], [0])
+        self.cursor_label = QtWidgets.QLabel("(0, 0)", self)
+        self.log_mode = y_log_mode_default
         self.draw(x_invert, y_log_mode_default,
-                  x_view_range_default, y_view_range_default)
+                  x_view_range_default, y_view_range_default, enable_markers)
+        
+        self.curve.scene().sigMouseMoved.connect(self.onMouseMoved)
 
-    def draw(self, x_invert, y_log_mode_default, x_view_range_default, y_view_range_default):
+    def draw(self, x_invert, y_log_mode_default, x_view_range_default, y_view_range_default, enable_markers):
+        self.setCursor(QtCore.Qt.CursorShape.CrossCursor)
+        self.cursor_label.setFixedWidth(200)
+        self.cursor_label.setStyleSheet('QLabel { color: green; }')
+        p = self.getPlotItem().getViewBox().mapViewToScene(QtCore.QPointF(0, 0))
+        self.cursor_label.move(int(p.x()), int(p.y()))
         self.setBackground((251, 251, 251))
         self.curve.setPen(mkPen(color=(98, 130, 181)))
         self.getPlotItem().getViewBox().invertX(x_invert)
@@ -79,6 +89,18 @@ class Chart(PlotWidget):
             x_view_range_default[0], x_view_range_default[1], 0)
         self.getPlotItem().setYRange(
             y_view_range_default[0], y_view_range_default[1], 0)
+        
+        if enable_markers:
+            hmarker = InfiniteLine(angle=0, movable=True, pen=mkPen({'color': 'r', 'width': 1}), 
+                                   label='{value:.2f}', 
+                                   labelOpts={'color': 'r', 'position': 0.1}
+                                   )
+            vmarker = InfiniteLine(angle=90, movable=True, pen=mkPen({'color': 'r', 'width': 1}), 
+                                   label='{value:.2f}',
+                                   labelOpts={'color': 'r', 'position': 0.1}
+                                   )
+            self.getPlotItem().addItem(hmarker)
+            self.getPlotItem().addItem(vmarker)
 
     def get_view_range(self):
         return self.getPlotItem().viewRange()
@@ -90,10 +112,18 @@ class Chart(PlotWidget):
         self.set_label('bottom', text)
 
     def set_y_log_mode(self, mode: bool):
+        self.log_mode = mode
         self.getPlotItem().setLogMode(False, mode)
 
     def set_data(self, x, y):
         self.curve.setData(x, y)
+
+    def onMouseMoved(self, point):
+        p = self.getPlotItem().getViewBox().mapSceneToView(point)
+        y = 10 ** p.y() if self.log_mode else p.y()
+        self.cursor_label.setText('({:.4f}, {:.4f})'.format(p.x(), y))
+        self.cursor_label.move(int(point.x()) + 20, int(point.y()) - 20)
+        
 
 
 class Tab(QtWidgets.QWidget):
@@ -127,7 +157,7 @@ class DirectTab(Tab):
                  ) -> None:
         super().__init__(processing_range_default, parent)
         self.chart = Chart(True, False, x_view_range_default,
-                           y_view_range_default, self)
+                           y_view_range_default, False, self)
         self.mean_label = FormatLabel("Mean: %.2fkV", FONT_SECONDARY, self)
         self.deviation_label = FormatLabel(
             "Std. dev: %.2fkV", FONT_SECONDARY, self)
@@ -192,7 +222,7 @@ class FftTab(Tab):
                  ) -> None:
         super().__init__(processing_range_default, parent)
         self.chart = Chart(False, y_log_mode_default,
-                           x_view_range_default, y_view_range_default, self)
+                           x_view_range_default, y_view_range_default, True, self)
         self.y_log_mode_checkbox = QtWidgets.QCheckBox("Log Y", self)
         self.draw(y_log_mode_default)
 
