@@ -1,4 +1,4 @@
-### Institute of Nuclear Physics
+### LabTM/desktop
 # Dual-Channel Voltage Flow Analizer
 
 Provides real-time visualization and mathematical processing of voltage from the high-frequency resonator.
@@ -34,7 +34,7 @@ source ~/venv/env{x}-{y}/bin/activate
 To install application module itself, execute the following command:
 
 ``` shell
-pip install -e git+https://github.com/Institute-of-Nuclear-Physics/desktop-client-hfr-voltage.git@v1.0#egg=desktop_client_hfr_voltage
+pip install -e git+https://github.com/budlabtm/desktop-client-hfr-voltage.git@v1.0#egg=desktop_client_hfr_voltage
 ```
 
 After that, application ready to run:
